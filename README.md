@@ -1,6 +1,3 @@
-# Paddockanalyse a aaa test
-yggugij
-
 \set ON_ERROR_STOP on
 \timing off
 

@@ -3,10 +3,10 @@
 // connexion.php : connexion à la base MySQL (inclus par toutes les pages)
 // Hébergement alwaysdata : remplacer COMPTE, MOTDEPASSE (et le nom de la base si besoin)
 // ------------------------------------------------------------
-$serveur = 'mysql-COMPTE.alwaysdata.net';   // hôte MySQL indiqué dans l'admin alwaysdata
-$base    = 'COMPTE_f1';                     // nom complet de la base (préfixé par le compte)
-$user    = 'COMPTE';                        // utilisateur MySQL (ou COMPTE_nom)
-$mdp     = 'MOTDEPASSE';                    // mot de passe MySQL
+$serveur = 'mysql-saebdd.alwaysdata.net';   // hôte MySQL indiqué dans l'admin alwaysdata
+$base    = 'saebdd_php';                     // nom complet de la base (préfixé par le compte)
+$user    = 'saebdd';                        // utilisateur MySQL (ou COMPTE_nom)
+$mdp     = 'SAEAlixNathan$';                    // mot de passe MySQL
 
 try
 {

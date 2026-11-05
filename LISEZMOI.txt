@@ -1,0 +1,44 @@
+PROJET WEB BUT SD 2 - S3 : site dynamique PHP / MySQL / JavaScript
+Thème : championnat du monde de Formule 1 (jeu de données Kaggle "Formula 1 World Championship")
+Équipe : (noms des 2-3 étudiants à compléter)
+
+INSTALLATION SUR ALWAYSDATA
+1. Admin alwaysdata > Bases de données > MySQL : créer la base (ex : COMPTE_f1) et noter
+   l'hôte (mysql-COMPTE.alwaysdata.net), l'utilisateur et le mot de passe.
+2. phpMyAdmin alwaysdata : sélectionner la base, onglet "Importer", choisir sql/f1_base_complete.sql
+   (base complète déjà remplie, ~2 Mo).
+   Variante : onglet SQL > exécuter sql/creation_base.sql, puis ouvrir importer_donnees.php
+   (plus lent car les insertions passent par le réseau).
+3. Modifier connexion.php : $serveur, $base, $user, $mdp.
+4. Envoyer le dossier du projet par FTP / SFTP dans le dossier www du compte alwaysdata
+   (le sous-dossier data/ n'est utile que pour importer_donnees.php).
+5. Ouvrir http://COMPTE.alwaysdata.net/projet_f1/index.php
+6. Compte administrateur (ajout / modification / suppression d'écuries) : admin / f1admin2026
+7. Le tableau de bord charge jQuery et HighCharts depuis Internet : connexion nécessaire.
+   Test en local (EasyPHP) : mettre localhost / root / mot de passe vide dans connexion.php.
+
+CONTENU DE L'ARCHIVE
+uml/                              diagramme UML des cas d'utilisation (PNG + SVG)
+sql/creation_base.sql             création de la base MySQL (6 tables)
+importer_donnees.php              script d'importation des CSV dans MySQL
+sql/f1_base_complete.sql          export SQL final de la base (structure + données)
+data/                             les 6 fichiers CSV importés
+index.php                         accueil : contexte + chiffres clés
+ecuries.php                       tableau des écuries (SELECT + filtre par nationalité)
+ecurie_ajout.php / ecurie_insert.php      ajout (INSERT)
+ecurie_modif.php / ecurie_update.php      modification (UPDATE)
+ecurie_suppr.php                  suppression (DELETE)
+resultats.php                     liste déroulante d'écuries + tableau de résultats
+dashboard.php                     tableau de bord : 7 graphiques (jQuery + HighCharts)
+login.php / logout.php / verif_session.php   authentification par variables de session
+connexion.php, fonctions.php, entete.php, pied.php   fichiers inclus (include)
+style.css                         charte graphique, site responsive
+
+LIMITES CONNUES (à dire dans la vidéo)
+- cleaned_lap_times.csv (551 743 lignes, 20 Mo) n'est pas importé : trop volumineux pour MySQL de l'IUT.
+- Les fichiers races et drivers ne sont pas fournis : on ne connaît donc ni l'année / le circuit
+  de chaque course (raceId), ni le nom des pilotes (driverId). Les pages affichent ces identifiants.
+- Pas de cartographie (les circuits n'ont pas de coordonnées GPS dans les CSV).
+- Pas de page d'import d'un nouveau jeu de données (seulement le script importer_donnees.php).
+
+VIDÉO : (coller ici le lien) - ce qui fonctionne / ne fonctionne pas, qui a fait quoi, utilisation de l'IA

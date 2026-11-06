@@ -125,12 +125,12 @@ foreach ($lignes as $ligne)
 // Fermeture de la connexion
 $bdd = null;
 ?>
-<!-- Bibliothèques jQuery et HighCharts (récupérées sur Internet, cf. TD4) -->
+<!-- Bibliothèques jQuery et HighCharts -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://code.highcharts.com/highcharts.js"></script>
 
-<h2>Tableau de bord</h2>
-<p>Indicateurs calculés à partir de la base MySQL (résultats de course, circuits, écuries et classements).</p>
+<h1>Tableau de bord</h1>
+<p class="intro">Sept indicateurs calculés à partir de la base MySQL (résultats de course, circuits, écuries et classements). Les graphiques suivent le mode clair ou sombre.</p>
 
 <section class="grille">
     <figure class="graphique" id="graph1"></figure>
@@ -143,73 +143,94 @@ $bdd = null;
 </section>
 
 <script>
-// jQuery : on attend que la page soit chargée avant de créer les graphiques
-$(document).ready(function ()
-{
-    // Graphique 1 : colonnes - victoires par écurie
-    Highcharts.chart('graph1', {
-        chart: {type: 'column'},
-        title: {text: 'Victoires par écurie (top 10)'},
-        xAxis: {categories: <?php echo json_encode($noms1); ?>},
-        yAxis: {title: {text: 'Victoires'}},
-        series: [{name: 'Victoires', color: '#e10600', data: <?php echo json_encode($valeurs1); ?>}]
-    });
+// Données calculées par PHP
+var D = {
+    n1: <?php echo json_encode($noms1); ?>, v1: <?php echo json_encode($valeurs1); ?>,
+    n2: <?php echo json_encode($noms2); ?>, p2: <?php echo json_encode($poles2); ?>, v2: <?php echo json_encode($victoires2); ?>,
+    d3: <?php echo json_encode($donnees3); ?>,
+    n4: <?php echo json_encode($noms4); ?>, v4: <?php echo json_encode($valeurs4); ?>,
+    n5: <?php echo json_encode($noms5); ?>, v5: <?php echo json_encode($valeurs5); ?>,
+    n6: <?php echo json_encode($noms6); ?>, v6: <?php echo json_encode($valeurs6); ?>,
+    n7: <?php echo json_encode($noms7); ?>, v7: <?php echo json_encode($valeurs7); ?>
+};
 
-    // Graphique 2 : colonnes avec 2 séries - poles et victoires
-    Highcharts.chart('graph2', {
-        chart: {type: 'column'},
-        title: {text: 'Poles positions et victoires (top 10 des victoires)'},
-        xAxis: {categories: <?php echo json_encode($noms2); ?>},
-        yAxis: {title: {text: 'Nombre'}},
+// Couleurs lues dans la feuille de style (clair ou sombre)
+function couleurs() {
+    var s = getComputedStyle(document.documentElement);
+    function v(nom) { return s.getPropertyValue(nom).trim(); }
+    var sombre = document.documentElement.getAttribute('data-theme') === 'dark';
+    return {
+        texte: v('--text'), discret: v('--muted'), trait: v('--border'),
+        accent: v('--btn'), neutre: v('--serie-neutre'),
+        palette: sombre
+            ? ['#ff4d42', '#9aa3b2', '#ff8a82', '#667085', '#c2352c', '#cfd4dc', '#ffb3ad', '#7d8798']
+            : ['#d90b00', '#2f3744', '#f0786f', '#7a8699', '#9f0800', '#b8c0cc', '#f4a6a1', '#4b5563']
+    };
+}
+
+// Options communes à tous les graphiques
+function base(c, type, titre, extra) {
+    var o = {
+        chart: {type: type, backgroundColor: 'transparent', style: {fontFamily: 'inherit'}},
+        title: {text: titre, align: 'left', style: {color: c.texte, fontSize: '15px', fontWeight: '600'}},
+        credits: {enabled: false},
+        legend: {itemStyle: {color: c.texte, fontWeight: '400'}, itemHoverStyle: {color: c.accent}},
+        xAxis: {labels: {style: {color: c.discret}}, lineColor: c.trait, tickColor: c.trait},
+        yAxis: {labels: {style: {color: c.discret}}, gridLineColor: c.trait, title: {style: {color: c.discret}}},
+        tooltip: {style: {fontFamily: 'inherit'}},
+        plotOptions: {series: {borderWidth: 0}}
+    };
+    return $.extend(true, o, extra);
+}
+
+function construire() {
+    var c = couleurs();
+    Highcharts.setOptions({lang: {thousandsSep: ' '}});
+
+    Highcharts.chart('graph1', base(c, 'column', 'Victoires par écurie (top 10)', {
+        xAxis: {categories: D.n1}, yAxis: {title: {text: 'Victoires'}}, legend: {enabled: false},
+        series: [{name: 'Victoires', color: c.accent, data: D.v1}]
+    }));
+
+    Highcharts.chart('graph2', base(c, 'column', 'Poles positions et victoires (top 10 des victoires)', {
+        xAxis: {categories: D.n2}, yAxis: {title: {text: 'Nombre'}},
         series: [
-            {name: 'Poles (1ère place sur la grille)', color: '#15151e', data: <?php echo json_encode($poles2); ?>},
-            {name: 'Victoires', color: '#e10600', data: <?php echo json_encode($victoires2); ?>}
+            {name: 'Poles (1ère place sur la grille)', color: c.neutre, data: D.p2},
+            {name: 'Victoires', color: c.accent, data: D.v2}
         ]
-    });
+    }));
 
-    // Graphique 3 : camembert - nationalité des écuries
-    Highcharts.chart('graph3', {
-        chart: {type: 'pie'},
-        title: {text: 'Nationalité des écuries'},
+    Highcharts.chart('graph3', base(c, 'pie', 'Nationalité des écuries', {
+        colors: c.palette,
         tooltip: {pointFormat: '{point.y} écuries ({point.percentage:.1f} %)'},
-        series: [{name: 'Écuries', data: <?php echo json_encode($donnees3); ?>}]
-    });
+        plotOptions: {pie: {borderWidth: 1, borderColor: 'transparent', dataLabels: {style: {color: c.texte, textOutline: 'none', fontWeight: '400'}}}},
+        series: [{name: 'Écuries', data: D.d3}]
+    }));
 
-    // Graphique 4 : barres horizontales - circuits par pays
-    Highcharts.chart('graph4', {
-        chart: {type: 'bar'},
-        title: {text: 'Nombre de circuits par pays (top 10)'},
-        xAxis: {categories: <?php echo json_encode($noms4); ?>},
-        yAxis: {title: {text: 'Circuits'}},
-        series: [{name: 'Circuits', color: '#15151e', data: <?php echo json_encode($valeurs4); ?>}]
-    });
+    Highcharts.chart('graph4', base(c, 'bar', 'Nombre de circuits par pays (top 10)', {
+        xAxis: {categories: D.n4}, yAxis: {title: {text: 'Circuits'}}, legend: {enabled: false},
+        series: [{name: 'Circuits', color: c.neutre, data: D.v4}]
+    }));
 
-    // Graphique 5 : courbe - victoires selon la place sur la grille
-    Highcharts.chart('graph5', {
-        chart: {type: 'spline'},
-        title: {text: 'Victoires selon la place sur la grille de départ'},
-        xAxis: {categories: <?php echo json_encode($noms5); ?>},
-        yAxis: {title: {text: 'Victoires'}},
-        series: [{name: 'Victoires', color: '#e10600', data: <?php echo json_encode($valeurs5); ?>}]
-    });
+    Highcharts.chart('graph5', base(c, 'spline', 'Victoires selon la place sur la grille de départ', {
+        xAxis: {categories: D.n5}, yAxis: {title: {text: 'Victoires'}}, legend: {enabled: false},
+        series: [{name: 'Victoires', color: c.accent, data: D.v5}]
+    }));
 
-    // Graphique 6 : barres horizontales - points marqués
-    Highcharts.chart('graph6', {
-        chart: {type: 'bar'},
-        title: {text: 'Points marqués en course (top 10)'},
-        xAxis: {categories: <?php echo json_encode($noms6); ?>},
-        yAxis: {title: {text: 'Points'}},
-        series: [{name: 'Points', color: '#e10600', data: <?php echo json_encode($valeurs6); ?>}]
-    });
+    Highcharts.chart('graph6', base(c, 'bar', 'Points marqués en course (top 10)', {
+        xAxis: {categories: D.n6}, yAxis: {title: {text: 'Points'}}, legend: {enabled: false},
+        series: [{name: 'Points', color: c.accent, data: D.v6}]
+    }));
 
-    // Graphique 7 : aires - courses passées en tête du championnat
-    Highcharts.chart('graph7', {
-        chart: {type: 'area'},
-        title: {text: 'Courses terminées en tête du championnat (top 10)'},
-        xAxis: {categories: <?php echo json_encode($noms7); ?>},
-        yAxis: {title: {text: 'Nombre de courses'}},
-        series: [{name: 'Courses en tête', color: '#15151e', data: <?php echo json_encode($valeurs7); ?>}]
-    });
-});
+    Highcharts.chart('graph7', base(c, 'area', 'Courses terminées en tête du championnat (top 10)', {
+        xAxis: {categories: D.n7}, yAxis: {title: {text: 'Nombre de courses'}}, legend: {enabled: false},
+        plotOptions: {area: {fillOpacity: 0.25}},
+        series: [{name: 'Courses en tête', color: c.neutre, data: D.v7}]
+    }));
+}
+
+// jQuery : on attend que la page soit chargée, puis on redessine quand le thème change
+$(document).ready(construire);
+document.addEventListener('themechange', construire);
 </script>
 <?php include("./pied.php"); ?>

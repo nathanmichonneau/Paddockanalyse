@@ -6,28 +6,33 @@ include("./connexion.php");
 include("./fonctions.php");
 $titre = 'Suppression d\'une écurie';
 include("./entete.php");
-include("./verif_session.php");
 
-$id = $_POST['id'];
-
-try
+echo '<h1>Suppression d\'une écurie</h1>';
+if (!isset($_POST['id']))
 {
-    $requete = $bdd->prepare("DELETE FROM ecurie WHERE constructorId = ?");
-    $requete->execute(array($id));
-    if ($requete->rowCount() > 0)
-    {
-        echo '<p class="succes">L\'écurie a été supprimée.</p>';
-    }
-    else
-    {
-        echo '<p class="erreur">Aucune écurie supprimée (identifiant inconnu).</p>';
-    }
+    echo '<p class="msg erreur">Aucune écurie sélectionnée : utilisez le bouton Supprimer de la liste des écuries.</p>';
 }
-catch (Exception $e)
+else
 {
-    echo '<p class="erreur">Suppression impossible : cette écurie est utilisée par des résultats, des qualifications ou des classements.</p>';
+    try
+    {
+        $requete = $bdd->prepare("DELETE FROM ecurie WHERE constructorId = ?");
+        $requete->execute(array($_POST['id']));
+        if ($requete->rowCount() > 0)
+        {
+            echo '<p class="msg succes">L\'écurie a été supprimée.</p>';
+        }
+        else
+        {
+            echo '<p class="msg erreur">Aucune écurie supprimée (identifiant inconnu).</p>';
+        }
+    }
+    catch (Exception $e)
+    {
+        echo '<p class="msg erreur">Suppression impossible : cette écurie est utilisée par des résultats, des qualifications ou des classements.</p>';
+    }
 }
 $bdd = null;
 ?>
-<p><a href="ecuries.php">Retour à la liste des écuries</a></p>
+<p><a class="btn" href="ecuries.php">Retour à la liste des écuries</a></p>
 <?php include("./pied.php"); ?>

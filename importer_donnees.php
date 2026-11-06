@@ -8,6 +8,13 @@ include("./connexion.php");
 include("./fonctions.php");
 set_time_limit(300);
 
+// Garde-fou : cette page VIDE puis recharge toutes les tables.
+// En navigateur, il faut ajouter ?confirmer=oui à l'adresse (en ligne de commande, aucune confirmation).
+if (php_sapi_name() !== 'cli' && (!isset($_GET['confirmer']) || $_GET['confirmer'] != 'oui'))
+{
+    die('<p>Cette page réinitialise toute la base. Pour continuer : <a href="importer_donnees.php?confirmer=oui">importer_donnees.php?confirmer=oui</a></p>');
+}
+
 // Importe un fichier CSV dans une table
 //  $colonnes       : colonnes du CSV à importer (mêmes noms que dans la table)
 //  $colonnes_temps : colonnes à convertir en secondes (voir fonctions.php)
@@ -66,7 +73,7 @@ $bdd->exec("SET FOREIGN_KEY_CHECKS = 1");
 
 // Import des 6 fichiers (les écuries d'abord, car les autres tables y font référence)
 $n = importer_csv($bdd, 'data/cleaned_circuits.csv', 'circuit',
-    array('circuitId', 'circuit_name', 'circuit_location', 'circuit_country', 'circuit_nationality'), array());
+    array('circuitId', 'circuit_name', 'circuit_location', 'circuit_country', 'circuit_nationality', 'latitude', 'longitude'), array());
 echo "circuit : $n lignes\n";
 
 $n = importer_csv($bdd, 'data/cleaned_constructors.csv', 'ecurie',

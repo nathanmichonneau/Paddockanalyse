@@ -1,6 +1,5 @@
 <?php
 // resultats.php : choix d'une écurie dans une liste déroulante, puis affichage de ses résultats
-// (même principe que ListeServ.html / php04.php du cours, regroupés dans un seul fichier)
 include("./connexion.php");
 include("./fonctions.php");
 $titre = 'Résultats';
@@ -13,29 +12,29 @@ if (isset($_POST['ecurie']))
     $idEcurie = $_POST['ecurie'];
 }
 ?>
-<h2>Résultats d'une écurie</h2>
+<h1>Résultats d'une écurie</h1>
+<p class="intro">Choisissez une écurie pour afficher ses 100 résultats les plus récents.</p>
 
-<form action="resultats.php" method="post">
-    <label>Sélectionnez l'écurie souhaitée :
-        <select name="ecurie">
+<form action="resultats.php" method="post" class="outils">
+    <div class="champ-outil">
+        <label for="ecurie">Écurie</label>
+        <select name="ecurie" id="ecurie" onchange="this.form.submit()">
             <?php
             // Seules les écuries qui ont au moins un résultat sont proposées
             $liste = lire_lignes($bdd, "SELECT DISTINCT e.constructorId, e.constructor_name FROM ecurie e JOIN resultat r ON r.constructorId = e.constructorId ORDER BY e.constructor_name");
             foreach ($liste as $ligne)
             {
+                $selection = '';
                 if ($ligne['constructorId'] == $idEcurie)
                 {
-                    echo '<option selected value="' . $ligne['constructorId'] . '">' . h($ligne['constructor_name']) . '</option>';
+                    $selection = ' selected';
                 }
-                else
-                {
-                    echo '<option value="' . $ligne['constructorId'] . '">' . h($ligne['constructor_name']) . '</option>';
-                }
+                echo '<option value="' . (int)$ligne['constructorId'] . '"' . $selection . '>' . h($ligne['constructor_name']) . '</option>';
             }
             ?>
         </select>
-    </label>
-    <input type="submit" value="Afficher les résultats">
+    </div>
+    <input type="submit" class="btn" value="Afficher les résultats">
 </form>
 
 <?php
@@ -60,29 +59,46 @@ if ($idEcurie != 0 && $ecurieExiste)
     $requete->execute(array($idEcurie));
     ?>
     <h2><?php echo h($ecurie['constructor_name']); ?></h2>
-    <p>Les 100 résultats les plus récents.</p>
-    <table>
-        <tr><th>Course (raceId)</th><th>Pilote (driverId)</th><th>Place sur la grille</th><th>Arrivée</th><th>Points</th><th>Tours</th><th>Meilleur tour</th></tr>
+    <div class="outils">
+        <div class="champ-outil">
+            <label for="rechercheResultats">Rechercher</label>
+            <input type="search" id="rechercheResultats" data-table="tableResultats" placeholder="Course, pilote...">
+        </div>
+        <span class="compteur" data-compteur="tableResultats" data-unite="résultat"></span>
+    </div>
+    <div class="table-wrap">
+    <table class="sortable" id="tableResultats">
+        <thead>
+            <tr>
+                <th class="num">Course (raceId)</th><th class="num">Pilote (driverId)</th><th class="num">Place sur la grille</th>
+                <th class="num">Arrivée</th><th class="num">Points</th><th class="num">Tours</th><th class="num">Meilleur tour</th>
+            </tr>
+        </thead>
+        <tbody>
         <?php
-        $nb = 0;
         $ligne = $requete->fetch();
         while ($ligne)
         {
+            $tri = '';
+            if ($ligne['fastestLapTime'] !== null)
+            {
+                $tri = $ligne['fastestLapTime'];
+            }
             echo '<tr>';
-            echo '<td>' . $ligne['raceId'] . '</td>';
-            echo '<td>' . $ligne['driverId'] . '</td>';
-            echo '<td>' . $ligne['grid_position'] . '</td>';
-            echo '<td>' . $ligne['position'] . '</td>';
-            echo '<td>' . $ligne['points'] . '</td>';
-            echo '<td>' . $ligne['laps'] . '</td>';
-            echo '<td>' . afficher_temps($ligne['fastestLapTime']) . '</td>';
+            echo '<td class="num">' . $ligne['raceId'] . '</td>';
+            echo '<td class="num">' . $ligne['driverId'] . '</td>';
+            echo '<td class="num">' . $ligne['grid_position'] . '</td>';
+            echo '<td class="num">' . $ligne['position'] . '</td>';
+            echo '<td class="num">' . $ligne['points'] . '</td>';
+            echo '<td class="num">' . $ligne['laps'] . '</td>';
+            echo '<td class="num" data-tri="' . $tri . '">' . afficher_temps($ligne['fastestLapTime']) . '</td>';
             echo '</tr>';
-            $nb++;
             $ligne = $requete->fetch();
         }
         ?>
+        </tbody>
     </table>
-    <p>Il y a <?php echo $nb; ?> résultats affichés.</p>
+    </div>
     <?php
 }
 $bdd = null;

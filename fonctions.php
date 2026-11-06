@@ -55,4 +55,34 @@ function afficher_temps($secondes)
     $reste = $secondes - $minutes * 60;
     return $minutes . ':' . sprintf('%06.3f', $reste);
 }
+
+// Lit les circuits (avec leur position GPS) pour la carte.
+// Renvoie NULL si les colonnes latitude / longitude n'existent pas encore (script sql/ajout_coordonnees.sql non exécuté)
+function lire_circuits($bdd)
+{
+    try
+    {
+        $lignes = lire_lignes($bdd, "SELECT circuitId, circuit_name, circuit_location, circuit_country, latitude, longitude
+                                     FROM circuit ORDER BY circuit_name");
+    }
+    catch (Exception $e)
+    {
+        return null;
+    }
+    $circuits = array();
+    foreach ($lignes as $l)
+    {
+        $lat = null;
+        $lng = null;
+        if ($l['latitude'] !== null && $l['longitude'] !== null)
+        {
+            $lat = (float)$l['latitude'];
+            $lng = (float)$l['longitude'];
+        }
+        $circuits[] = array('id' => (int)$l['circuitId'], 'nom' => $l['circuit_name'],
+                            'ville' => $l['circuit_location'], 'pays' => $l['circuit_country'],
+                            'lat' => $lat, 'lng' => $lng);
+    }
+    return $circuits;
+}
 ?>

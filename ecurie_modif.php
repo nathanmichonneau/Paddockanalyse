@@ -1,11 +1,10 @@
 <?php
-// ecurie_modif.php : affiche le formulaire de modification d'une écurie (comme php08.php du cours)
-// L'identifiant de l'écurie arrive par l'URL (méthode GET) : ecurie_modif.php?id=3
+// ecurie_modif.php : formulaire de modification d'une écurie
+// L'identifiant arrive par l'URL (méthode GET) : ecurie_modif.php?id=3
 include("./connexion.php");
 include("./fonctions.php");
 $titre = 'Modifier une écurie';
 include("./entete.php");
-include("./verif_session.php");
 
 $id = 0;
 if (isset($_GET['id']))
@@ -21,20 +20,22 @@ $bdd = null;
 
 if (!$e)
 {
-    echo '<p class="erreur">Écurie introuvable.</p>';
+    echo '<h1>Modifier une écurie</h1>';
+    echo '<p class="msg erreur">Écurie introuvable.</p>';
+    echo '<p><a class="btn" href="ecuries.php">Retour à la liste des écuries</a></p>';
 }
 else
 {
 ?>
-<h2>Modification d'une écurie</h2>
-<form action="ecurie_update.php" method="post">
-    <!-- champ caché : l'identifiant ne se modifie pas (cf. cours 4.1) -->
-    <input type="hidden" name="id" value="<?php echo $e['constructorId']; ?>">
-    <label>Nom : <input type="text" name="nom" maxlength="100" required value="<?php echo h($e['constructor_name']); ?>"></label>
-    <label>Nationalité : <input type="text" name="nationalite" maxlength="50" value="<?php echo h($e['constructor_nationality']); ?>"></label>
-    <label>Pays : <input type="text" name="pays" maxlength="50" value="<?php echo h($e['constructor_home']); ?>"></label>
-    <input type="submit" value="Modifier">
-    <input type="reset" value="Annuler">
+<h1>Modifier l'écurie « <?php echo h($e['constructor_name']); ?> »</h1>
+<form action="ecurie_update.php" method="post" class="formulaire">
+    <!-- champ caché : l'identifiant ne se modifie pas -->
+    <input type="hidden" name="id" value="<?php echo (int)$e['constructorId']; ?>">
+    <div class="champ"><label><span>Nom</span><input type="text" name="nom" maxlength="100" required value="<?php echo h($e['constructor_name']); ?>"></label></div>
+    <div class="champ"><label><span>Nationalité</span><input type="text" name="nationalite" maxlength="50" value="<?php echo h($e['constructor_nationality']); ?>"></label></div>
+    <div class="champ"><label><span>Pays</span><input type="text" name="pays" maxlength="50" value="<?php echo h($e['constructor_home']); ?>"></label></div>
+    <input type="submit" class="btn" value="Enregistrer les modifications">
+    <a class="btn btn-sec" href="ecuries.php">Annuler</a>
 </form>
 <?php
 }

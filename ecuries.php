@@ -1,43 +1,48 @@
 <?php
-// ecuries.php : liste des écuries dans un tableau HTML (SELECT) avec filtre par nationalité
-// Même principe que php03.php / php04.php du cours (liste déroulante remplie depuis la base)
+// ecuries.php : liste des écuries (SELECT) avec filtre par nationalité, recherche et tri dans le tableau
+// Ajout, modification et suppression sont ouverts à tous les visiteurs.
 include("./connexion.php");
 include("./fonctions.php");
 $titre = 'Écuries';
 include("./entete.php");
 
-// Nationalité choisie dans la liste déroulante (méthode GET, cf. cours 4.5)
+// Nationalité choisie dans la liste déroulante (méthode GET)
 $nationalite = '';
 if (isset($_GET['nationalite']))
 {
     $nationalite = $_GET['nationalite'];
 }
 ?>
-<h2>Les écuries</h2>
+<h1>Les écuries</h1>
+<p class="intro">Participations, victoires et points de chaque écurie. Cliquez sur un titre de colonne pour trier.</p>
 
-
-<form action="ecuries.php" method="get">
-    <label>Filtrer par nationalité :
-        <select name="nationalite">
+<form action="ecuries.php" method="get" class="outils">
+    <div class="champ-outil">
+        <label for="recherche">Rechercher</label>
+        <input type="search" id="recherche" data-table="tableEcuries" placeholder="Nom, pays...">
+    </div>
+    <div class="champ-outil">
+        <label for="nationalite">Nationalité</label>
+        <select name="nationalite" id="nationalite" onchange="this.form.submit()">
             <option value="">Toutes</option>
             <?php
             // Liste des nationalités lue dans la base
             $liste = lire_lignes($bdd, "SELECT DISTINCT constructor_nationality FROM ecurie ORDER BY constructor_nationality");
             foreach ($liste as $ligne)
             {
+                $selection = '';
                 if ($ligne['constructor_nationality'] == $nationalite)
                 {
-                    echo '<option selected value="' . h($ligne['constructor_nationality']) . '">' . h($ligne['constructor_nationality']) . '</option>';
+                    $selection = ' selected';
                 }
-                else
-                {
-                    echo '<option value="' . h($ligne['constructor_nationality']) . '">' . h($ligne['constructor_nationality']) . '</option>';
-                }
+                echo '<option value="' . h($ligne['constructor_nationality']) . '"' . $selection . '>' . h($ligne['constructor_nationality']) . '</option>';
             }
             ?>
         </select>
-    </label>
-    <input type="submit" value="Afficher la liste">
+    </div>
+    <noscript><input type="submit" class="btn btn-sec" value="Filtrer"></noscript>
+    <span class="compteur" data-compteur="tableEcuries" data-unite="écurie"></span>
+    <a class="btn droite" href="ecurie_ajout.php">Ajouter une écurie</a>
 </form>
 
 <?php
@@ -60,15 +65,17 @@ else
     $resultat = $bdd->prepare($debut . " WHERE e.constructor_nationality = ? " . $fin);
     $resultat->execute(array($nationalite));
 }
-
-$nb = 0;
 ?>
-<table>
-    <tr>
-        <th>Nom</th><th>Nationalité</th><th>Pays</th>
-        <th>Participations</th><th>Victoires</th><th>Points</th>
-        <?php if (isset($_SESSION['admin'])) { echo '<th>Actions</th>'; } ?>
-    </tr>
+<div class="table-wrap">
+<table class="sortable" id="tableEcuries">
+    <thead>
+        <tr>
+            <th>Nom</th><th>Nationalité</th><th>Pays</th>
+            <th class="num">Participations</th><th class="num">Victoires</th><th class="num">Points</th>
+            <th data-nosort>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
     <?php
     $ligne = $resultat->fetch();
     while ($ligne)
@@ -77,27 +84,25 @@ $nb = 0;
         echo '<td>' . h($ligne['constructor_name']) . '</td>';
         echo '<td>' . h($ligne['constructor_nationality']) . '</td>';
         echo '<td>' . h($ligne['constructor_home']) . '</td>';
-        echo '<td>' . $ligne['participations'] . '</td>';
-        echo '<td>' . $ligne['victoires'] . '</td>';
-        echo '<td>' . $ligne['points'] . '</td>';
-        // Boutons réservés à l'administrateur connecté
-        if (isset($_SESSION['admin']))
-        {
-            echo '<td>';
-            echo '<a href="ecurie_modif.php?id=' . $ligne['constructorId'] . '">Modifier</a> ';
-            echo '<form action="ecurie_suppr.php" method="post" style="display:inline" onsubmit="return confirm(\'Supprimer cette écurie ?\');">';
-            echo '<input type="hidden" name="id" value="' . $ligne['constructorId'] . '">';
-            echo '<button type="submit">Supprimer</button>';
-            echo '</form>';
-            echo '</td>';
-        }
+        echo '<td class="num">' . $ligne['participations'] . '</td>';
+        echo '<td class="num">' . $ligne['victoires'] . '</td>';
+        echo '<td class="num">' . $ligne['points'] . '</td>';
+        echo '<td class="actions">';
+        echo '<a class="btn btn-sec btn-sm" href="ecurie_modif.php?id=' . (int)$ligne['constructorId'] . '">Modifier</a> ';
+        // Confirmation avant suppression (le nom est protégé pour être mis dans du JavaScript)
+        $message = 'Supprimer l\'écurie ' . $ligne['constructor_name'] . ' ?';
+        echo '<form action="ecurie_suppr.php" method="post" onsubmit="return confirm(' . h(json_encode($message)) . ');">';
+        echo '<input type="hidden" name="id" value="' . (int)$ligne['constructorId'] . '">';
+        echo '<button type="submit" class="btn btn-danger btn-sm">Supprimer</button>';
+        echo '</form>';
+        echo '</td>';
         echo '</tr>';
-        $nb++;
         $ligne = $resultat->fetch();
     }
     ?>
+    </tbody>
 </table>
-<p>Il y a <?php echo $nb; ?> écuries.</p>
+</div>
 <?php
 $bdd = null;
 include("./pied.php");

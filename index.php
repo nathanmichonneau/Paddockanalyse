@@ -23,7 +23,7 @@ $nbPilotes = $ligne['nbPilotes'];
 $nbResultats = $ligne['nbResultats'];
 $bdd = null;
 ?>
-<h2>Le championnat du monde de Formule 1 (TEST V2)</h2>
+<h2>Le championnat du monde de Formule 1 (TEST V3)</h2>
 <p>
     Cette application web présente les données du championnat du monde de Formule 1
     (jeu de données OpenData « Formula 1 World Championship » issu de Kaggle).

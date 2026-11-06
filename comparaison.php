@@ -1,23 +1,7 @@
 <?php
 // comparaison.php : compare deux écuries (points, victoires, classement par saison)
-require_once __DIR__ . '/connexion.php';
-
-$pdo = null;
-foreach ($GLOBALS as $valeur) {
-    if ($valeur instanceof PDO) { $pdo = $valeur; break; }
-}
-
-// Cherche la table qui contient toutes les colonnes demandées (les noms de tables peuvent varier)
-function trouver_table(PDO $pdo, array $cols) {
-    $cols = array_map('strtolower', $cols);
-    $marques = implode(',', array_fill(0, count($cols), '?'));
-    $st = $pdo->prepare("SELECT table_name FROM information_schema.columns
-        WHERE table_schema = DATABASE() AND LOWER(column_name) IN ($marques)
-        GROUP BY table_name HAVING COUNT(DISTINCT LOWER(column_name)) = ? ORDER BY table_name");
-    $st->execute(array_merge($cols, [count($cols)]));
-    $t = $st->fetchColumn();
-    return $t ? str_replace('`', '', $t) : null;
-}
+require_once __DIR__ . '/outils.php';
+$pdo = obtenir_pdo();
 
 $erreur = null; $ecuries = []; $T = [];
 try {
@@ -96,29 +80,20 @@ $a = (int) ($_GET['a'] ?? ($defaut[0] ?? ($ecuries[0]['id'] ?? 0)));
 $b = (int) ($_GET['b'] ?? ($defaut[1] ?? ($ecuries[1]['id'] ?? 0)));
 
 $titre = 'Comparer deux écuries';
-require_once __DIR__ . '/entete.php';
+require __DIR__ . '/haut.php';
 ?>
-<style>
-  .cmp-barre { display: flex; flex-wrap: wrap; gap: 1rem; align-items: end; margin: 1rem 0; }
-  .cmp-barre label { display: flex; flex-direction: column; gap: .25rem; }
-  .cmp-barre select { padding: .5rem; min-width: 14rem; }
-  .cmp-kpi { border-collapse: collapse; margin: 1rem 0; width: 100%; max-width: 40rem; }
-  .cmp-kpi th, .cmp-kpi td { padding: .5rem .75rem; border-bottom: 1px solid rgba(128,128,128,.3); text-align: right; }
-  .cmp-kpi th:first-child, .cmp-kpi td:first-child { text-align: left; }
-  #cmp-graphique { min-height: 420px; }
-</style>
 
 <h1>Comparer deux écuries</h1>
 
 <?php if ($erreur): ?>
-  <p><strong>Erreur :</strong> <?= htmlspecialchars($erreur) ?></p>
+  <p><strong>Erreur :</strong> <?= e($erreur) ?></p>
 <?php else: ?>
-  <div class="cmp-barre">
+  <div class="pa-barre">
     <label>Écurie A
-      <select id="ea"><?php foreach ($ecuries as $e): ?><option value="<?= (int) $e['id'] ?>"<?= (int) $e['id'] === $a ? ' selected' : '' ?>><?= htmlspecialchars($e['nom']) ?></option><?php endforeach; ?></select>
+      <select id="ea"><?php foreach ($ecuries as $e): ?><option value="<?= (int) $e['id'] ?>"<?= (int) $e['id'] === $a ? ' selected' : '' ?>><?= e($e['nom']) ?></option><?php endforeach; ?></select>
     </label>
     <label>Écurie B
-      <select id="eb"><?php foreach ($ecuries as $e): ?><option value="<?= (int) $e['id'] ?>"<?= (int) $e['id'] === $b ? ' selected' : '' ?>><?= htmlspecialchars($e['nom']) ?></option><?php endforeach; ?></select>
+      <select id="eb"><?php foreach ($ecuries as $e): ?><option value="<?= (int) $e['id'] ?>"<?= (int) $e['id'] === $b ? ' selected' : '' ?>><?= e($e['nom']) ?></option><?php endforeach; ?></select>
     </label>
     <label>Indicateur
       <select id="metrique">
@@ -132,7 +107,7 @@ require_once __DIR__ . '/entete.php';
   <p id="cmp-message" role="status"></p>
   <div id="cmp-graphique"></div>
 
-  <table class="cmp-kpi">
+  <table class="pa-tableau">
     <thead><tr><th>Bilan</th><th id="th-a">A</th><th id="th-b">B</th></tr></thead>
     <tbody id="cmp-corps"></tbody>
   </table>
@@ -184,8 +159,9 @@ require_once __DIR__ . '/entete.php';
 
   ['ea', 'eb'].forEach(id => $(id).addEventListener('change', charger));
   $('metrique').addEventListener('change', dessiner);
+  window.addEventListener('pa-theme', dessiner);
   charger();
   </script>
 <?php endif; ?>
 
-<?php require_once __DIR__ . '/pied.php'; ?>
+<?php require __DIR__ . '/bas.php'; ?>

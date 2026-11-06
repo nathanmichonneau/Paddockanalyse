@@ -1,66 +1,46 @@
 <?php
-// index.php : page d'accueil = contexte du projet, chiffres clés de la base et mini-carte des circuits
-include("./connexion.php");
-include("./fonctions.php");
+// index.php : accueil avec chiffres clés et mini-carte des circuits
+require_once __DIR__ . '/outils.php';
+$pdo = obtenir_pdo();
+$circuits = []; $cles = []; $erreur = null;
+try {
+    if (!$pdo) throw new Exception("Aucune connexion PDO trouvée dans connexion.php.");
+    [$circuits, $sans] = donnees_circuits($pdo);
+    $t = trouver_table($pdo, ['constructorId', 'name']);
+    if ($t) $cles['Écuries'] = (int) $pdo->query("SELECT COUNT(*) FROM `$t`")->fetchColumn();
+    $cles['Circuits'] = count($circuits) + $sans;
+    $t = trouver_table($pdo, ['raceId', 'year', 'round']);
+    if ($t) {
+        $cles['Grands Prix'] = (int) $pdo->query("SELECT COUNT(*) FROM `$t`")->fetchColumn();
+        $cles['Saisons'] = (int) $pdo->query("SELECT COUNT(DISTINCT year) FROM `$t`")->fetchColumn();
+    }
+} catch (Throwable $ex) { $erreur = $ex->getMessage(); }
+
 $titre = 'Accueil';
-$head_extra = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">';
-include("./entete.php");
-
-// Chiffres clés : une requête SELECT par indicateur
-$ligne = $bdd->query("SELECT COUNT(*) AS nb FROM ecurie")->fetch();
-$nbEcuries = $ligne['nb'];
-
-$ligne = $bdd->query("SELECT COUNT(*) AS nb FROM circuit")->fetch();
-$nbCircuits = $ligne['nb'];
-
-$ligne = $bdd->query("SELECT MIN(year) AS debut, MAX(year) AS fin, COUNT(*) AS nb FROM saison")->fetch();
-$anneeDebut = $ligne['debut'];
-$anneeFin = $ligne['fin'];
-$nbSaisons = $ligne['nb'];
-
-$ligne = $bdd->query("SELECT COUNT(DISTINCT raceId) AS nbCourses, COUNT(DISTINCT driverId) AS nbPilotes, COUNT(*) AS nbResultats FROM resultat")->fetch();
-$nbCourses = $ligne['nbCourses'];
-$nbPilotes = $ligne['nbPilotes'];
-$nbResultats = $ligne['nbResultats'];
-
-$circuits = lire_circuits($bdd);
-$bdd = null;
+$head_extra = '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">';
+require __DIR__ . '/haut.php';
 ?>
-<h1>Le championnat du monde de Formule 1</h1>
-<p class="intro">
-    Cette application présente les données du championnat du monde de Formule 1
-    (jeu de données OpenData « Formula 1 World Championship » issu de Kaggle) :
-    écuries, résultats, circuits et indicateurs. La liste des écuries peut être consultée et modifiée par tous les visiteurs.
-</p>
-
-<ul class="chiffres">
-    <li class="chiffre"><b><?php echo $anneeDebut . '–' . $anneeFin; ?></b><span>Période (<?php echo $nbSaisons; ?> saisons)</span></li>
-    <li class="chiffre"><b><?php echo number_format($nbCourses, 0, ',', ' '); ?></b><span>Courses</span></li>
-    <li class="chiffre"><b><?php echo number_format($nbEcuries, 0, ',', ' '); ?></b><span>Écuries</span></li>
-    <li class="chiffre"><b><?php echo number_format($nbPilotes, 0, ',', ' '); ?></b><span>Pilotes</span></li>
-    <li class="chiffre"><b><?php echo number_format($nbCircuits, 0, ',', ' '); ?></b><span>Circuits</span></li>
-    <li class="chiffre"><b><?php echo number_format($nbResultats, 0, ',', ' '); ?></b><span>Résultats enregistrés</span></li>
-</ul>
-
-<h2>Où se sont disputées les courses</h2>
-<?php if ($circuits === null) { ?>
-    <p class="msg erreur">La carte nécessite les coordonnées GPS des circuits : exécutez le script <code>sql/ajout_coordonnees.sql</code> dans phpMyAdmin.</p>
-<?php } else { ?>
-    <div id="carteAccueil" class="carte carte-mini" role="img" aria-label="Carte des circuits de Formule 1"></div>
-    <p><a href="circuits.php">Ouvrir la carte complète avec recherche et filtre par pays</a></p>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <script src="js/carte.js"></script>
-    <script>
-        creerCarte('carteAccueil', <?php echo json_encode($circuits, JSON_HEX_TAG | JSON_HEX_AMP); ?>, {rayon: 5});
-    </script>
-<?php } ?>
-
-<h2>Que peut-on faire ?</h2>
-<ul>
-    <li><a href="ecuries.php">Écuries</a> : liste avec victoires et points, recherche, tri, ajout, modification et suppression.</li>
-    <li><a href="circuits.php">Circuits</a> : carte interactive et liste des circuits par pays.</li>
-    <li><a href="resultats.php">Résultats</a> : choisir une écurie et afficher ses résultats en course.</li>
-    <li><a href="dashboard.php">Tableau de bord</a> : 7 indicateurs sous forme de graphiques.</li>
-    <li><a href="documentation.php">Documentation</a> : source des données, modèle de la base et cas d'utilisation.</li>
-</ul>
-<?php include("./pied.php"); ?>
+<h1>Le championnat du monde de Formule 1 en données</h1>
+<?php if ($erreur): ?>
+  <p><strong>Erreur :</strong> <?= e($erreur) ?></p>
+<?php else: ?>
+  <div class="pa-chiffres">
+    <?php foreach ($cles as $nom => $n): ?><div><strong><?= number_format($n, 0, ',', ' ') ?></strong><span><?= e($nom) ?></span></div><?php endforeach; ?>
+  </div>
+  <?php if ($circuits): ?>
+    <div id="carte" class="pa-carte mini"></div>
+    <p><a href="circuits.php">Ouvrir la carte complète avec les filtres</a></p>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="carte.js"></script>
+    <script>paCarte(<?= json_encode($circuits, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>, { mini: true });</script>
+  <?php else: ?>
+    <p>La carte apparaîtra dès que les coordonnées des circuits seront dans la base (<code>sql/ajout_coordonnees.sql</code>).</p>
+  <?php endif; ?>
+<?php endif; ?>
+<div class="pa-liens">
+  <a href="circuits.php">Circuits<small>Carte filtrable par pays et période</small></a>
+  <a href="ecuries.php">Écuries<small>Liste, ajout, modification</small></a>
+  <a href="comparaison.php">Comparer<small>Deux écuries, saison par saison</small></a>
+  <a href="dashboard.php">Graphiques<small>Tableau de bord</small></a>
+</div>
+<?php require __DIR__ . '/bas.php'; ?>

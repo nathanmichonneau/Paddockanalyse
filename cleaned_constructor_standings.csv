@@ -1,0 +1,31 @@
+name: Déploiement alwaysdata
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Préparer la connexion SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Mettre à jour le site
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ssh "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "
+            set -e
+            cd ~/www
+            [ -d .git ] || git init -q
+            git fetch -q https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git main
+            git reset -q --hard FETCH_HEAD
+          "

@@ -1,0 +1,70 @@
+/* style.css : feuille de style unique pour toutes les pages (noir, rouge F1, blanc) */
+
+/* ----- Base ----- */
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #f4f4f4; color: #222; line-height: 1.5; }
+a { color: #c20a00; }
+
+/* ----- En-tête et menu ----- */
+header { background: #15151e; padding: 10px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 30px; }
+.logo { color: #fff; font-size: 22px; font-weight: bold; text-decoration: none; border-left: 6px solid #e10600; padding-left: 10px; }
+nav a { color: #ddd; text-decoration: none; margin-right: 16px; padding: 4px 0; border-bottom: 2px solid transparent; }
+nav a:hover { color: #fff; }
+nav a.actif { color: #fff; font-weight: bold; border-bottom-color: #e10600; }
+
+/* ----- Contenu ----- */
+main { max-width: 1100px; margin: 25px auto; padding: 0 15px; }
+h1 { margin: 0 0 8px 0; }
+h2 { border-left: 6px solid #e10600; padding-left: 10px; margin-top: 35px; }
+.intro { color: #555; max-width: 750px; }
+footer { text-align: center; font-size: 13px; color: #666; padding: 25px 10px; }
+
+/* ----- Tableaux (défilement horizontal si l'écran est étroit) ----- */
+table { border-collapse: collapse; width: 100%; background: #fff; margin: 12px 0; display: block; overflow-x: auto; }
+th { background: #15151e; color: #fff; padding: 8px; text-align: left; white-space: nowrap; }
+td { padding: 6px 8px; border-bottom: 1px solid #ddd; }
+tr:hover td { background: #fbe9e7; }
+.num { text-align: right; }
+
+/* ----- Formulaires ----- */
+form label { display: block; margin: 10px 0; font-weight: bold; }
+form.filtre { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: flex-end; background: #fff; padding: 12px; border-top: 3px solid #e10600; }
+form.filtre label { margin: 0; }
+input[type=text], input[type=search], select { padding: 7px; width: 100%; max-width: 330px; border: 1px solid #bbb; border-radius: 3px; font-size: 15px; }
+form.filtre input[type=search], form.filtre select { width: auto; min-width: 170px; }
+
+/* ----- Boutons (liens ou boutons de formulaire) ----- */
+.btn, button, input[type=submit] { display: inline-block; background: #e10600; color: #fff; border: none; padding: 8px 16px; border-radius: 3px; cursor: pointer; font-size: 15px; text-decoration: none; }
+.btn:hover, button:hover, input[type=submit]:hover { background: #a80400; }
+.btn-gris { background: #555; }
+.btn-gris:hover { background: #333; }
+.btn-petit { padding: 4px 10px; font-size: 13px; }
+td form { display: inline; }
+
+/* ----- Messages ----- */
+.succes { background: #e0f5e0; border-left: 5px solid #2e8b2e; padding: 10px; }
+.erreur { background: #fde0dd; border-left: 5px solid #e10600; padding: 10px; }
+
+/* ----- Chiffres clés et cartes de liens ----- */
+.cartes { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+.carte { background: #fff; border-top: 4px solid #e10600; padding: 15px; text-align: center; }
+.carte .nombre { display: block; font-size: 28px; font-weight: bold; color: #e10600; }
+.liens { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
+.liens a { background: #fff; padding: 15px; text-decoration: none; color: #222; border-left: 5px solid #15151e; }
+.liens a:hover { border-left-color: #e10600; }
+.liens small { display: block; color: #666; }
+
+/* ----- Graphiques et carte ----- */
+.grille { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.graphique { background: #fff; padding: 10px; margin: 0; min-width: 0; height: 380px; }
+#graphique-comparaison { background: #fff; padding: 10px; height: 400px; margin: 15px 0; }
+#carte { height: 520px; border: 1px solid #bbb; margin: 15px 0; }
+
+/* ----- Documentation ----- */
+.diagramme img { max-width: 100%; background: #fff; border: 1px solid #ddd; }
+
+/* ----- Petits écrans ----- */
+@media (max-width: 800px) {
+    .grille { grid-template-columns: 1fr; }
+    #carte { height: 380px; }
+}

@@ -72,6 +72,4 @@ include("./entete.php");
 <?php
 // Fermeture de la connexion
 $bdd = null;
-// Fin de la page
-include("./pied.php");
 ?>

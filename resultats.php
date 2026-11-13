@@ -201,6 +201,4 @@ if ($ecurie)
 }
 // Fermeture de la connexion
 $bdd = null;
-// Fin de la page
-include("./pied.php");
 ?>

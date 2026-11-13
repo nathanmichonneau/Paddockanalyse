@@ -193,6 +193,4 @@ else if (positions.length > 0)
 <?php
 // Fermeture de la connexion
 $bdd = null;
-// Fin de la page
-include("./pied.php");
 ?>

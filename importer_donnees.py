@@ -66,7 +66,7 @@ for table in ["classement_ecurie", "qualification", "resultat", "course",
 connexion.commit()
 print("Tables vidées")
 
-# ---------- 6. On importe (d'abord les tables sans clé étrangère) ----------
+# On importe (d'abord les tables sans clé étrangère) 
 importer("saison", "cleaned_seasons.csv")
 importer("circuit", "cleaned_circuits.csv")
 importer("ecurie", "cleaned_constructors.csv")
@@ -77,6 +77,5 @@ importer("resultat", "cleaned_results.csv", ["fastestLapTime"])
 importer("qualification", "cleaned_qualifying.csv", ["q1", "q2", "q3"])
 importer("classement_ecurie", "cleaned_constructor_standings.csv")
 
-# ---------- 7. Fin ----------
 connexion.close()
 print("Import terminé !")

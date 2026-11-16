@@ -1,59 +1,72 @@
 # importer_donnees.py : importe les fichiers CSV dans la base MySQL
-# Avant : installer les modules avec   pip install pandas pymysql
+# Avant : installer le module avec   pip install pymysql
 # Avant : avoir créé les tables avec sql/creation_base.sql (phpMyAdmin)
 
-import pandas as pd
+import csv
 import pymysql
 
-# Informations de connexion
+#  Informations de connexion 
 SERVEUR = "mysql-saebdd.alwaysdata.net"
 BASE = "saebdd_php"
 USER = "saebdd"
 MDP = "SAEAlixNathan$"
 
-# Dossier où se trouvent les CSV
-DOSSIER = "data/"
-
-# Connexion à la base
+# 2. Connexion à la base 
 connexion = pymysql.connect(host=SERVEUR, user=USER, password=MDP,
                             database=BASE, charset="utf8mb4")
 curseur = connexion.cursor()
 
 
+# Fonction qui transforme un temps en secondes 
+# Exemple : "0 days 00:01:26.572000" devient 86.572
+def temps_en_secondes(texte):
+    heure = texte.split(" ")[2]          # "00:01:26.572000"
+    h, m, s = heure.split(":")           # "00", "01", "26.572000"
+    return int(h) * 3600 + int(m) * 60 + float(s)
+
+
 # Fonction qui importe un fichier CSV dans une table 
 def importer(table, fichier, colonnes_temps=[]):
-    # On lit le CSV
-    df = pd.read_csv("data/" + fichier)
+    # On ouvre le CSV
+    f = open("data/" + fichier)
+    lecteur = csv.reader(f)
 
-    # Les temps sont écrits "0 days 00:01:26.572000" -> on les passe en secondes
-    for col in colonnes_temps:
-        df[col] = pd.to_timedelta(df[col]).dt.total_seconds()
+    # La première ligne contient les noms des colonnes
+    noms = next(lecteur)
 
-    # Les "\N" (valeur manquante de l'export d'origine) deviennent des cases vides
-    df = df.replace("\\N", float("nan"))
-
-    # Les cases vides (NaN) deviennent NULL (None en Python)
-    df = df.astype(object).where(df.notna(), None)
+    # On lit toutes les autres lignes
+    lignes = []
+    for ligne in lecteur:
+        nouvelle_ligne = []
+        for i in range(len(ligne)):
+            valeur = ligne[i]
+            if valeur == "" or valeur == "\\N":
+                valeur = None                        # case vide -> NULL
+            elif noms[i] in colonnes_temps:
+                valeur = temps_en_secondes(valeur)   # temps -> secondes
+            nouvelle_ligne.append(valeur)
+        lignes.append(nouvelle_ligne)
+    f.close()
 
     # On prépare la requête : INSERT INTO table (col1, col2...) VALUES (%s, %s...)
-    colonnes = ", ".join(df.columns)
-    valeurs = ", ".join(["%s"] * len(df.columns))
+    colonnes = ", ".join(noms)
+    valeurs = ", ".join(["%s"] * len(noms))
     requete = "INSERT INTO " + table + " (" + colonnes + ") VALUES (" + valeurs + ")"
 
     # On insère toutes les lignes d'un coup
-    curseur.executemany(requete, df.values.tolist())
+    curseur.executemany(requete, lignes)
     connexion.commit()
-    print(table, ":", len(df), "lignes importées")
+    print(table, ":", len(lignes), "lignes importées")
 
 
-# ---------- 4. On vide les tables (dans l'ordre inverse à cause des clés étrangères) ----------
+# ---------- 5. On vide les tables (dans l'ordre inverse à cause des clés étrangères) ----------
 for table in ["classement_ecurie", "qualification", "resultat", "course",
               "pilote", "statut", "ecurie", "circuit", "saison"]:
     curseur.execute("DELETE FROM " + table)
 connexion.commit()
 print("Tables vidées")
 
-# On importe dans l'odre les tables 
+# ---------- 6. On importe (d'abord les tables sans clé étrangère) ----------
 importer("saison", "cleaned_seasons.csv")
 importer("circuit", "cleaned_circuits.csv")
 importer("ecurie", "cleaned_constructors.csv")
@@ -64,5 +77,6 @@ importer("resultat", "cleaned_results.csv", ["fastestLapTime"])
 importer("qualification", "cleaned_qualifying.csv", ["q1", "q2", "q3"])
 importer("classement_ecurie", "cleaned_constructor_standings.csv")
 
+# ---------- 7. Fin ----------
 connexion.close()
 print("Import terminé !")

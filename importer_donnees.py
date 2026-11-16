@@ -11,7 +11,7 @@ BASE = "saebdd_php"
 USER = "saebdd"
 MDP = "SAEAlixNathan$"
 
-# 2. Connexion à la base 
+# Connexion à la base 
 connexion = pymysql.connect(host=SERVEUR, user=USER, password=MDP,
                             database=BASE, charset="utf8mb4")
 curseur = connexion.cursor()
@@ -59,7 +59,7 @@ def importer(table, fichier, colonnes_temps=[]):
     print(table, ":", len(lignes), "lignes importées")
 
 
-# ---------- 5. On vide les tables (dans l'ordre inverse à cause des clés étrangères) ----------
+# On vide les tables (dans l'ordre inverse) Pour pas avoir de donnée en doublon
 for table in ["classement_ecurie", "qualification", "resultat", "course",
               "pilote", "statut", "ecurie", "circuit", "saison"]:
     curseur.execute("DELETE FROM " + table)

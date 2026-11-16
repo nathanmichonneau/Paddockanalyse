@@ -5,7 +5,7 @@
 import pandas as pd
 import pymysql
 
-# ---------- 1. Informations de connexion (comme dans connexion.php) ----------
+# Informations de connexion
 SERVEUR = "mysql-saebdd.alwaysdata.net"
 BASE = "saebdd_php"
 USER = "saebdd"
@@ -14,16 +14,16 @@ MDP = "SAEAlixNathan$"
 # Dossier où se trouvent les CSV
 DOSSIER = "data/"
 
-# ---------- 2. Connexion à la base ----------
+# Connexion à la base
 connexion = pymysql.connect(host=SERVEUR, user=USER, password=MDP,
                             database=BASE, charset="utf8mb4")
 curseur = connexion.cursor()
 
 
-# ---------- 3. Fonction qui importe un fichier CSV dans une table ----------
+# Fonction qui importe un fichier CSV dans une table 
 def importer(table, fichier, colonnes_temps=[]):
     # On lit le CSV
-    df = pd.read_csv(DOSSIER + fichier)
+    df = pd.read_csv("data/" + fichier)
 
     # Les temps sont écrits "0 days 00:01:26.572000" -> on les passe en secondes
     for col in colonnes_temps:
@@ -53,7 +53,7 @@ for table in ["classement_ecurie", "qualification", "resultat", "course",
 connexion.commit()
 print("Tables vidées")
 
-# ---------- 5. On importe (d'abord les tables sans clé étrangère) ----------
+# On importe dans l'odre les tables 
 importer("saison", "cleaned_seasons.csv")
 importer("circuit", "cleaned_circuits.csv")
 importer("ecurie", "cleaned_constructors.csv")
@@ -64,6 +64,5 @@ importer("resultat", "cleaned_results.csv", ["fastestLapTime"])
 importer("qualification", "cleaned_qualifying.csv", ["q1", "q2", "q3"])
 importer("classement_ecurie", "cleaned_constructor_standings.csv")
 
-# ---------- 6. Fin ----------
 connexion.close()
 print("Import terminé !")

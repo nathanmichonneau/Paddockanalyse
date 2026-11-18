@@ -25,7 +25,7 @@ if (isset($_POST['pays']))
     $pays = trim($_POST['pays']);
 }
 
-// ----- Début de la page -----
+//  Début de la page 
 $titre = 'Modification d\'une écurie';
 include("./entete.php");
 ?>

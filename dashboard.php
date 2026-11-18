@@ -5,9 +5,7 @@
 include("./connexion.php");   // connexion à la base ($bdd)
 include("./fonctions.php");   // fonctions h(), lire_lignes()
 
-// ============================================================
 // Graphique 1 : nombre de victoires par écurie (top 10)
-// ============================================================
 $lignes = lire_lignes($bdd, "SELECT e.constructor_name AS nom, COUNT(*) AS valeur
     FROM resultat r
     JOIN ecurie e ON e.constructorId = r.constructorId
@@ -24,9 +22,8 @@ for ($i = 0; $i < count($lignes); $i++)
     $valeurs1[] = (int)$lignes[$i]['valeur'];
 }
 
-// ============================================================
+
 // Graphique 2 : poles positions et victoires par écurie (2 séries)
-// ============================================================
 $lignes = lire_lignes($bdd, "SELECT e.constructor_name AS nom,
         SUM(r.grid_position = 1) AS poles,
         SUM(r.position = 1) AS victoires
@@ -45,9 +42,7 @@ for ($i = 0; $i < count($lignes); $i++)
     $victoires2[] = (int)$lignes[$i]['victoires'];
 }
 
-// ============================================================
 // Graphique 3 : nationalité des écuries (camembert)
-// ============================================================
 $lignes = lire_lignes($bdd, "SELECT constructor_nationality AS nom, COUNT(*) AS valeur
     FROM ecurie
     GROUP BY constructor_nationality
@@ -72,9 +67,7 @@ if ($autres > 0)
     $donnees3[] = array('name' => 'Autres', 'y' => $autres);
 }
 
-// ============================================================
 // Graphique 4 : nombre de circuits par pays (top 10)
-// ============================================================
 $lignes = lire_lignes($bdd, "SELECT circuit_country AS nom, COUNT(*) AS valeur
     FROM circuit
     GROUP BY circuit_country
@@ -88,9 +81,7 @@ for ($i = 0; $i < count($lignes); $i++)
     $valeurs4[] = (int)$lignes[$i]['valeur'];
 }
 
-// ============================================================
 // Graphique 5 : victoires selon la place sur la grille de départ
-// ============================================================
 $lignes = lire_lignes($bdd, "SELECT grid_position AS nom, COUNT(*) AS valeur
     FROM resultat
     WHERE position = 1 AND grid_position BETWEEN 1 AND 10
@@ -104,9 +95,7 @@ for ($i = 0; $i < count($lignes); $i++)
     $valeurs5[] = (int)$lignes[$i]['valeur'];
 }
 
-// ============================================================
 // Graphique 6 : points marqués en course par écurie (top 10)
-// ============================================================
 $lignes = lire_lignes($bdd, "SELECT e.constructor_name AS nom, SUM(r.points) AS valeur
     FROM resultat r
     JOIN ecurie e ON e.constructorId = r.constructorId
@@ -121,9 +110,8 @@ for ($i = 0; $i < count($lignes); $i++)
     $valeurs6[] = (float)$lignes[$i]['valeur'];
 }
 
-// ============================================================
+
 // Graphique 7 : nombre de courses terminées en tête du championnat des constructeurs
-// ============================================================
 $lignes = lire_lignes($bdd, "SELECT e.constructor_name AS nom, COUNT(*) AS valeur
     FROM classement_ecurie c
     JOIN ecurie e ON e.constructorId = c.constructorId
@@ -139,9 +127,8 @@ for ($i = 0; $i < count($lignes); $i++)
     $valeurs7[] = (int)$lignes[$i]['valeur'];
 }
 
-// ============================================================
+
 // Graphique 8 : nombre de Grands Prix par saison
-// ============================================================
 $lignes = lire_lignes($bdd, "SELECT year AS nom, COUNT(*) AS valeur
     FROM course
     GROUP BY year

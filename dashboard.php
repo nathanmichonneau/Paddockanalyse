@@ -141,7 +141,7 @@ for ($i = 0; $i < count($lignes); $i++)
     $valeurs8[] = (int)$lignes[$i]['valeur'];
 }
 
-// ----- Début de la page -----
+// Début de la page 
 $titre = 'Tableau de bord';
 include("./entete.php");
 ?>
@@ -172,7 +172,7 @@ include("./entete.php");
 // jQuery : on attend que la page soit entièrement chargée avant de dessiner
 $(document).ready(function ()
 {
-    // ----- Graphique 1 : colonnes -----
+    // Graphique 1 : colonnes 
     Highcharts.chart('graph1', {
         chart: {type: 'column'},
         title: {text: 'Victoires par écurie (top 10)'},
@@ -183,7 +183,7 @@ $(document).ready(function ()
         series: [{name: 'Victoires', color: '#e10600', data: <?php echo json_encode($valeurs1); ?>}]
     });
 
-    // ----- Graphique 2 : colonnes avec deux séries -----
+    // Graphique 2 : colonnes avec deux séries 
     Highcharts.chart('graph2', {
         chart: {type: 'column'},
         title: {text: 'Poles positions et victoires (top 10)'},
@@ -196,7 +196,7 @@ $(document).ready(function ()
         ]
     });
 
-    // ----- Graphique 3 : camembert -----
+    // Graphique 3 : camembert 
     Highcharts.chart('graph3', {
         chart: {type: 'pie'},
         title: {text: 'Nationalité des écuries'},
@@ -205,7 +205,7 @@ $(document).ready(function ()
         series: [{name: 'Écuries', data: <?php echo json_encode($donnees3); ?>}]
     });
 
-    // ----- Graphique 4 : barres horizontales -----
+    // Graphique 4 : barres horizontales 
     Highcharts.chart('graph4', {
         chart: {type: 'bar'},
         title: {text: 'Nombre de circuits par pays (top 10)'},
@@ -216,7 +216,7 @@ $(document).ready(function ()
         series: [{name: 'Circuits', color: '#15151e', data: <?php echo json_encode($valeurs4); ?>}]
     });
 
-    // ----- Graphique 5 : courbe -----
+    // Graphique 5 : courbe 
     Highcharts.chart('graph5', {
         chart: {type: 'spline'},
         title: {text: 'Victoires selon la place sur la grille'},
@@ -227,7 +227,7 @@ $(document).ready(function ()
         series: [{name: 'Victoires', color: '#e10600', data: <?php echo json_encode($valeurs5); ?>}]
     });
 
-    // ----- Graphique 6 : barres horizontales -----
+    // Graphique 6 : barres horizontales 
     Highcharts.chart('graph6', {
         chart: {type: 'bar'},
         title: {text: 'Points marqués en course (top 10)'},
@@ -238,7 +238,7 @@ $(document).ready(function ()
         series: [{name: 'Points', color: '#e10600', data: <?php echo json_encode($valeurs6); ?>}]
     });
 
-    // ----- Graphique 7 : aires -----
+    // Graphique 7 : aires 
     Highcharts.chart('graph7', {
         chart: {type: 'area'},
         title: {text: 'Courses terminées en tête du championnat (top 10)'},
@@ -249,7 +249,7 @@ $(document).ready(function ()
         series: [{name: 'Courses en tête', color: '#15151e', data: <?php echo json_encode($valeurs7); ?>}]
     });
 
-    // ----- Graphique 8 : ligne -----
+    // Graphique 8 : ligne 
     Highcharts.chart('graph8', {
         chart: {type: 'line'},
         title: {text: 'Nombre de Grands Prix par saison'},

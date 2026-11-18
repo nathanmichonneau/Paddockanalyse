@@ -23,7 +23,7 @@ for ($i = 0; $i < count($tables); $i++)
     $nbLignes[$i] = lire_valeur($bdd, "SELECT COUNT(*) FROM " . $tables[$i][0]);
 }
 
-// ----- Début de la page -----
+// Début de la page 
 $titre = 'Documentation';
 include("./entete.php");
 ?>

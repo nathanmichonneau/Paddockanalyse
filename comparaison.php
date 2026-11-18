@@ -28,10 +28,10 @@ function lire_saisons($bdd, $idEcurie)
     return $saisons;
 }
 
-// ----- Liste des écuries pour les deux listes déroulantes -----
+//  Liste des écuries pour les deux listes déroulantes 
 $listeEcuries = lire_lignes($bdd, "SELECT constructorId, constructor_name FROM ecurie ORDER BY constructor_name");
 
-// ----- Lecture des choix dans l'adresse (méthode GET) -----
+//  Lecture des choix dans l'adresse (méthode GET) 
 $a = 0;
 $b = 0;
 $indicateur = 'points';
@@ -48,7 +48,7 @@ if (isset($_GET['indicateur']) && $_GET['indicateur'] == 'victoires')
     $indicateur = 'victoires';
 }
 
-// ----- Valeurs par défaut : Ferrari contre McLaren -----
+//  Valeurs par défaut : Ferrari contre McLaren 
 if ($a == 0)
 {
     $a = lire_valeur($bdd, "SELECT constructorId FROM ecurie WHERE constructor_name = 'Ferrari' LIMIT 1");
@@ -58,7 +58,7 @@ if ($b == 0)
     $b = lire_valeur($bdd, "SELECT constructorId FROM ecurie WHERE constructor_name = 'McLaren' LIMIT 1");
 }
 
-// ----- On cherche le nom de chaque écurie dans la liste (et on vérifie qu'elle existe) -----
+// On cherche le nom de chaque écurie dans la liste (et on vérifie qu'elle existe) 
 $nomA = '';
 $nomB = '';
 for ($i = 0; $i < count($listeEcuries); $i++)
@@ -73,7 +73,7 @@ for ($i = 0; $i < count($listeEcuries); $i++)
     }
 }
 
-// ----- Début de la page -----
+// Début de la page 
 $titre = 'Comparer deux écuries';
 include("./entete.php");
 ?>
@@ -133,11 +133,11 @@ elseif ($a == $b)
 }
 else
 {
-    // ----- Données de chaque écurie -----
+    // Données de chaque écurie 
     $saisonsA = lire_saisons($bdd, $a);
     $saisonsB = lire_saisons($bdd, $b);
 
-    // ----- Première et dernière année où l'une des deux écuries a couru -----
+    // Première et dernière année où l'une des deux écuries a couru 
     $requete = $bdd->prepare("SELECT MIN(c.year) AS debut, MAX(c.year) AS fin
         FROM resultat r JOIN course c ON c.raceId = r.raceId
         WHERE r.constructorId = ? OR r.constructorId = ?");
@@ -151,7 +151,7 @@ else
     }
     else
     {
-        // ----- On parcourt chaque année de la période -----
+        // On parcourt chaque année de la période 
         $annees = array();          // années affichées sur le graphique
         $serieA = array();          // valeurs de l'écurie A (NULL si elle n'a pas couru)
         $serieB = array();          // valeurs de l'écurie B

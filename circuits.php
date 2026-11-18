@@ -3,7 +3,7 @@
 include("./connexion.php");   // connexion à la base ($bdd)
 include("./fonctions.php");   // fonctions h(), lire_lignes()...
 
-// ----- Lecture des choix de l'utilisateur dans l'adresse (méthode GET) -----
+// Lecture des choix de l'utilisateur dans l'adresse (méthode GET) 
 $pays = '';
 $idChoisi = 0;
 // Pays choisi dans la liste déroulante
@@ -19,7 +19,7 @@ if (isset($_GET['id']))
     $pays = '';
 }
 
-// ----- Condition WHERE : seulement si un pays est choisi -----
+// Condition WHERE : seulement si un pays est choisi 
 $condition = '';
 $valeurs = array();
 if ($pays != '')
@@ -28,7 +28,7 @@ if ($pays != '')
     $valeurs[] = $pays;
 }
 
-// ----- Requête : un circuit par ligne, avec son nombre de Grands Prix et la période -----
+// Requête : un circuit par ligne, avec son nombre de Grands Prix et la période 
 $requete = $bdd->prepare("SELECT ci.circuitId, ci.circuit_name, ci.circuit_location, ci.circuit_country,
         ci.latitude, ci.longitude,
         COUNT(co.raceId) AS nb_gp, MIN(co.year) AS premiere, MAX(co.year) AS derniere
@@ -40,15 +40,9 @@ $requete = $bdd->prepare("SELECT ci.circuitId, ci.circuit_name, ci.circuit_locat
 $requete->execute($valeurs);
 
 // On range les circuits dans un tableau (pour le tableau HTML et pour la carte)
-$circuits = array();
-$ligne = $requete->fetch();
-while ($ligne)
-{
-    $circuits[] = $ligne;
-    $ligne = $requete->fetch();
-}
+$circuits = $requete->fetchAll();
 
-// ----- Données envoyées au JavaScript de la carte -----
+//  Données envoyées au JavaScript de la carte 
 $marqueurs = array();
 for ($i = 0; $i < count($circuits); $i++)
 {
@@ -70,7 +64,7 @@ for ($i = 0; $i < count($circuits); $i++)
 // Liste des pays pour la liste déroulante
 $listePays = lire_lignes($bdd, "SELECT DISTINCT circuit_country FROM circuit ORDER BY circuit_country");
 
-// ----- Début de la page -----
+// Début de la page 
 $titre = 'Circuits';
 include("./entete.php");
 ?>
@@ -86,7 +80,7 @@ include("./entete.php");
             // Pour chaque pays de la base...
             for ($i = 0; $i < count($listePays); $i++)
             {
-                // ... on le sélectionne si c'est celui qui a été choisi
+                // on le sélectionne si c'est celui qui a été choisi
                 $selection = '';
                 if ($listePays[$i]['circuit_country'] == $pays)
                 {
@@ -116,7 +110,7 @@ var circuits = <?php echo json_encode($marqueurs); ?>;
 // Identifiant du circuit à mettre en valeur (0 = aucun)
 var idChoisi = <?php echo $idChoisi; ?>;
 
-// On crée la carte dans la zone "carte", centrée sur le monde
+// On crée la carte dans la zone "carte", centrée
 var carte = L.map('carte').setView([30, 10], 2);
 
 // On ajoute le fond de carte OpenStreetMap
@@ -132,17 +126,17 @@ var marqueurChoisi = null;
 // Pour chaque circuit...
 for (var i = 0; i < circuits.length; i++)
 {
-    // ... on lit le circuit
+    // on lit le circuit
     var c = circuits[i];
-    // ... on prépare le texte de la bulle d'information
+    // on prépare le texte de la bulle d'information
     var texte = '<strong>' + c.nom + '</strong><br>' + c.ville + ', ' + c.pays + '<br>' + c.gp + ' Grand(s) Prix';
-    // ... on place un marqueur sur la carte
+    // on place un marqueur sur la carte
     var marqueur = L.marker([c.lat, c.lng]).addTo(carte);
-    // ... on associe la bulle au marqueur
+    // on associe la bulle au marqueur
     marqueur.bindPopup(texte);
-    // ... on retient la position
+    // on retient la position
     positions.push([c.lat, c.lng]);
-    // ... si c'est le circuit demandé dans l'adresse, on le retient
+    // si c'est le circuit demandé dans l'adresse, on le retient
     if (c.id == idChoisi)
     {
         marqueurChoisi = marqueur;
